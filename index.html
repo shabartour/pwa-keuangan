@@ -60,13 +60,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
     </style>
 </head>
 <body class="h-full text-slate-800 flex flex-col max-w-md mx-auto sm:max-w-2xl md:max-w-4xl bg-slate-100 shadow-2xl relative min-h-screen pb-20">
@@ -79,27 +72,58 @@
                     <i class="fa-solid font-bold fa-wallet text-amber-300 text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">KeuanganKu</h1>
+                    <h1 class="font-bold text-lg leading-tight">KeuanganKu <span class="text-[10px] bg-sky-900 px-1.5 py-0.5 rounded text-sky-200">Private</span></h1>
                     <div class="flex items-center gap-1.5 text-xs text-sky-200">
-                        <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="syncStatusText">Online (Tersinkron)</span>
+                        <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span id="syncStatusText">Menunggu Autentikasi...</span>
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="openConfigModal()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition text-sm" title="Pengaturan Firebase">
+                <button onclick="openConfigModal()" class="p-2 rounded-lg bg-white/10 hover:bg-white/25 text-white transition text-sm" title="Pengaturan Firebase">
                     <i class="fa-solid fa-gear"></i>
                 </button>
                 <button onclick="openAuthModal()" id="authBtn" class="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-900 font-semibold text-xs shadow hover:bg-amber-300 transition">
-                    <i class="fa-solid fa-user-lock mr-1"></i> <span id="authBtnText">Akun</span>
+                    <i class="fa-solid fa-user-lock mr-1"></i> <span id="authBtnText">Login</span>
                 </button>
             </div>
         </div>
     </header>
 
+    <!-- OVERLAY BLOKIR JIKA BELUM LOGIN -->
+    <div id="authOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl border border-slate-100">
+            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold shadow-inner">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="space-y-1">
+                <h2 class="font-extrabold text-slate-900 text-lg">Aplikasi Keuangan Privat</h2>
+                <p class="text-xs text-slate-500">Data Anda dilindungi dan bersifat privat. Silakan masuk menggunakan akun terdaftar atau buat akun baru untuk mengakses pencatatan.</p>
+            </div>
+            <div class="space-y-2.5 pt-2 text-left">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Email</label>
+                    <input type="email" id="loginEmail" placeholder="nama@email.com" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="pt-2 flex gap-2">
+                    <button onclick="handleCustomLogin()" class="flex-1 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow transition">Login</button>
+                    <button onclick="handleCustomRegister()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">Daftar Akun</button>
+                </div>
+            </div>
+            <div class="border-t pt-3">
+                <button onclick="openConfigModal()" class="text-[11px] text-sky-600 font-semibold hover:underline">
+                    <i class="fa-solid fa-sliders mr-1"></i> Atur / Ubah Konfigurasi Firebase
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- CONTENT VIEWS -->
     <main class="flex-1 p-4 space-y-5">
-
         <!-- VIEW 1: BERANDA / DASHBOARD -->
         <section id="viewDashboard" class="space-y-4">
             <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
@@ -331,7 +355,7 @@
     </main>
 
     <!-- FLOATING ACTION BUTTON -->
-    <div class="fixed bottom-20 right-4 z-20">
+    <div class="fixed bottom-20 right-4 z-25">
         <button onclick="openTransactionModal()" class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold px-4 py-3 rounded-full shadow-lg hover:shadow-amber-500/30 active:scale-95 transition">
             <i class="fa-solid fa-plus text-lg"></i>
             <span class="text-xs sm:text-sm">Transaksi Baru</span>
@@ -465,7 +489,7 @@
                 <button onclick="closeConfigModal()" class="text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-500">
-                Tempelkan objek <code>firebaseConfig</code> Anda agar aplikasi tersinkronisasi secara cloud. Jika dikosongkan, aplikasi berjalan menggunakan penyimpanan lokal browser (IndexedDB).
+                Masukkan objek <code>firebaseConfig</code> dari Firebase Console Anda agar aplikasi tersinkronisasi secara privat.
             </p>
             <form onsubmit="handleSaveFirebaseConfig(event)" class="space-y-2.5 text-xs">
                 <div>
@@ -473,14 +497,14 @@
                     <textarea id="cfgJson" rows="5" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..." \n}' class="w-full p-2.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
                 </div>
                 <div class="flex gap-2 pt-1">
-                    <button type="button" onclick="resetFirebaseConfig()" class="py-2 px-3 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100">Reset Default</button>
+                    <button type="button" onclick="resetFirebaseConfig()" class="py-2 px-3 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100">Hapus Config</button>
                     <button type="submit" class="flex-1 py-2 bg-sky-600 text-white font-bold rounded-xl shadow">Simpan & Muat Ulang</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 4: AUTHENTICATION / AKUN -->
+    <!-- MODAL 4: AUTHENTICATION / MANAJEMEN AKUN -->
     <div id="modalAuth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4">
             <div class="flex items-center justify-between border-b pb-2">
@@ -488,13 +512,13 @@
                 <button onclick="closeAuthModal()" class="text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="authContent" class="space-y-3 text-xs">
-                <!-- Dynamically populated via JS -->
+                <!-- Dynamically populated -->
             </div>
         </div>
     </div>
 
     <!-- NOTIFICATION TOAST -->
-    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-xl flex items-center gap-2 opacity-0 transition-all pointer-events-none">
+    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-60 bg-slate-900 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-xl flex items-center gap-2 opacity-0 transition-all pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toastMsg">Pesan Notifikasi</span>
     </div>
@@ -503,7 +527,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         let db = null;
         let auth = null;
@@ -514,13 +538,13 @@
         let roomsData = [];
         let chartInstance = null;
 
-        const defaultCfg = {
-            apiKey: "demo-key",
-            authDomain: "demo.firebaseapp.com",
-            projectId: "demo-project",
-            storageBucket: "demo.appspot.com",
-            messagingSenderId: "123",
-            appId: "1:123"
+        const defaultFirebaseConfig = {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
         };
 
         window.showToast = function(msg, type = 'success') {
@@ -570,7 +594,14 @@
         // Initialize Firebase
         function initFirebase() {
             let savedCfg = localStorage.getItem('pwa_firebase_config');
-            let cfg = savedCfg ? JSON.parse(savedCfg) : defaultCfg;
+            if (!savedCfg) {
+                document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-rose-500";
+                document.getElementById('syncStatusText').innerText = "Konfigurasi Firebase Belum Diatur";
+                openConfigModal();
+                return;
+            }
+
+            let cfg = JSON.parse(savedCfg);
             
             try {
                 const app = initializeApp(cfg);
@@ -582,26 +613,27 @@
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user;
                     const authBtnText = document.getElementById('authBtnText');
+                    const overlay = document.getElementById('authOverlay');
+
                     if (user) {
-                        authBtnText.innerText = user.isAnonymous ? "Anonim" : (user.email ? user.email.split('@')[0] : "Akun");
+                        authBtnText.innerText = user.email ? user.email.split('@')[0] : "Akun";
                         document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-emerald-400";
-                        document.getElementById('syncStatusText').innerText = "Online (Tersinkron)";
+                        document.getElementById('syncStatusText').innerText = "Privat (Terhubung)";
+                        overlay.classList.add('hidden');
                         loadFirestoreData(user.uid);
                     } else {
                         authBtnText.innerText = "Login";
-                        signInAnonymously(auth).catch(() => {
-                            document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-amber-400";
-                            document.getElementById('syncStatusText').innerText = "Mode Offline Lokal";
-                        });
+                        document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-amber-400";
+                        document.getElementById('syncStatusText').innerText = "Menunggu Login";
+                        overlay.classList.remove('hidden');
                     }
                 });
             } catch (e) {
-                document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-rose-400";
-                document.getElementById('syncStatusText').innerText = "Config Error / Lokal";
+                document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-rose-500";
+                document.getElementById('syncStatusText').innerText = "Kesalahan Konfigurasi Firebase";
             }
         }
 
-        // Mock / Local state handling if needed or direct Firestore
         function loadFirestoreData(uid) {
             if (unsubscribeTransactions) unsubscribeTransactions();
             if (unsubscribeRooms) unsubscribeRooms();
@@ -611,7 +643,7 @@
                 transactionsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAll();
             }, (error) => {
-                showToast("Gagal memuat transaksi online", "error");
+                showToast("Gagal memuat data dari database", "error");
             });
 
             const roomQuery = query(collection(db, `users/${uid}/rooms`));
@@ -621,37 +653,56 @@
             }, (error) => {});
         }
 
-        // Modal Handlers
+        // Custom Login / Register handlers
+        window.handleCustomLogin = function() {
+            if (!auth) {
+                showToast("Atur konfigurasi Firebase terlebih dahulu!", "error");
+                openConfigModal();
+                return;
+            }
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            if(!email || !pass) {
+                showToast("Email dan password wajib diisi", "error");
+                return;
+            }
+            signInWithEmailAndPassword(auth, email, pass)
+                .then(() => showToast("Login berhasil!"))
+                .catch(err => showToast("Gagal Login: " + err.message, "error"));
+        }
+
+        window.handleCustomRegister = function() {
+            if (!auth) {
+                showToast("Atur konfigurasi Firebase terlebih dahulu!", "error");
+                openConfigModal();
+                return;
+            }
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            if(!email || !pass) {
+                showToast("Email dan password wajib diisi", "error");
+                return;
+            }
+            createUserWithEmailAndPassword(auth, email, pass)
+                .then(() => showToast("Akun berhasil dibuat & masuk!"))
+                .catch(err => showToast("Gagal Daftar: " + err.message, "error"));
+        }
+
         window.openConfigModal = function() {
             let saved = localStorage.getItem('pwa_firebase_config');
-            document.getElementById('cfgJson').value = saved ? saved : JSON.stringify(defaultCfg, null, 2);
+            document.getElementById('cfgJson').value = saved ? saved : JSON.stringify(defaultFirebaseConfig, null, 2);
             document.getElementById('modalConfig').classList.remove('hidden');
         }
         window.closeConfigModal = function() { document.getElementById('modalConfig').classList.add('hidden'); }
         
         window.openAuthModal = function() {
             const content = document.getElementById('authContent');
-            if (currentUser && !currentUser.isAnonymous) {
+            if (currentUser) {
                 content.innerHTML = `
                     <div class="p-3 bg-slate-50 rounded-xl space-y-2">
-                        <p class="font-semibold text-slate-700">Login sebagai:</p>
-                        <p class="font-mono text-slate-900 bg-white p-2 rounded border">${currentUser.email}</p>
-                        <button onclick="handleLogout()" class="w-full py-2 bg-rose-600 text-white font-bold rounded-xl">Keluar Akun</button>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = `
-                    <div class="space-y-3">
-                        <button onclick="handleAnonymousLogin()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl">Masuk secara Anonim</button>
-                        <div class="border-t pt-2 space-y-2">
-                            <p class="font-bold text-slate-600">Atau Masuk dengan Email:</p>
-                            <input type="email" id="authEmail" placeholder="Email..." class="w-full p-2.5 bg-slate-50 border rounded-xl outline-none">
-                            <input type="password" id="authPass" placeholder="Password..." class="w-full p-2.5 bg-slate-50 border rounded-xl outline-none">
-                            <div class="flex gap-2 pt-1">
-                                <button onclick="handleEmailLogin()" class="flex-1 py-2 bg-sky-600 text-white font-bold rounded-xl">Login</button>
-                                <button onclick="handleEmailRegister()" class="flex-1 py-2 bg-emerald-600 text-white font-bold rounded-xl">Daftar</button>
-                            </div>
-                        </div>
+                        <p class="font-semibold text-slate-700">Akun Aktif:</p>
+                        <p class="font-mono text-slate-900 bg-white p-2 rounded border break-all">${currentUser.email}</p>
+                        <button onclick="handleLogout()" class="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow">Keluar Akun</button>
                     </div>
                 `;
             }
@@ -659,35 +710,11 @@
         }
         window.closeAuthModal = function() { document.getElementById('modalAuth').classList.add('hidden'); }
 
-        window.handleAnonymousLogin = function() {
-            signInAnonymously(auth).then(() => {
-                showToast("Masuk sebagai Anonim sukses");
-                closeAuthModal();
-            }).catch(err => showToast(err.message, "error"));
-        }
-
-        window.handleEmailLogin = function() {
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPass').value;
-            signInWithEmailAndPassword(auth, email, pass).then(() => {
-                showToast("Login berhasil");
-                closeAuthModal();
-            }).catch(err => showToast(err.message, "error"));
-        }
-
-        window.handleEmailRegister = function() {
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPass').value;
-            createUserWithEmailAndPassword(auth, email, pass).then(() => {
-                showToast("Registrasi & Login berhasil");
-                closeAuthModal();
-            }).catch(err => showToast(err.message, "error"));
-        }
-
         window.handleLogout = function() {
             signOut(auth).then(() => {
                 showToast("Berhasil keluar");
                 closeAuthModal();
+                location.reload();
             });
         }
 
@@ -697,7 +724,7 @@
             try {
                 JSON.parse(json);
                 localStorage.setItem('pwa_firebase_config', json);
-                showToast("Config berhasil disimpan. Memuat ulang...");
+                showToast("Config disimpan. Memuat ulang...");
                 setTimeout(() => location.reload(), 1000);
             } catch (err) {
                 showToast("Format JSON tidak valid!", "error");
@@ -706,7 +733,7 @@
 
         window.resetFirebaseConfig = function() {
             localStorage.removeItem('pwa_firebase_config');
-            showToast("Config direset. Memuat ulang...");
+            showToast("Config dihapus. Memuat ulang...");
             setTimeout(() => location.reload(), 1000);
         }
 
@@ -752,7 +779,6 @@
             }
         }
 
-        // Subcategory dynamic map
         const subCategoriesMap = {
             "Pribadi": {
                 "debit": ["Gaji / Pemasukan", "Bonus", "Lainnya"],
@@ -783,7 +809,6 @@
             });
         }
 
-        // Transaction Modal Actions
         window.openTransactionModal = function() {
             document.getElementById('txId').value = "";
             document.getElementById('txForm').reset();
@@ -797,7 +822,7 @@
         window.handleSaveTransaction = function(e) {
             e.preventDefault();
             if (!currentUser) {
-                showToast("Harap login terlebih dahulu untuk menyimpan", "error");
+                showToast("Harap login terlebih dahulu", "error");
                 return;
             }
 
@@ -811,16 +836,16 @@
             const reference = document.getElementById('txReference').value;
 
             const payload = { type, date, category, subCategory, amount, notes, reference, updatedAt: new Date().toISOString() };
-
             const colRef = collection(db, `users/${currentUser.uid}/transactions`);
+
             if (id) {
                 updateDoc(doc(db, `users/${currentUser.uid}/transactions`, id), payload).then(() => {
-                    showToast("Transaksi berhasil diperbarui");
+                    showToast("Transaksi diperbarui");
                     closeTransactionModal();
                 });
             } else {
                 addDoc(colRef, payload).then(() => {
-                    showToast("Transaksi berhasil ditambahkan");
+                    showToast("Transaksi ditambahkan");
                     closeTransactionModal();
                 });
             }
@@ -844,13 +869,10 @@
 
         window.deleteTransaction = function(id) {
             if (confirm("Hapus transaksi ini?")) {
-                deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, id)).then(() => {
-                    showToast("Transaksi dihapus");
-                });
+                deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, id)).then(() => showToast("Transaksi dihapus"));
             }
         }
 
-        // Room modal actions
         window.openAddRoomModal = function() {
             document.getElementById('roomForm').reset();
             document.getElementById('roomId').value = "";
@@ -889,7 +911,6 @@
             }
         }
 
-        // Render & Calculations
         function renderAll() {
             calculateBalances();
             renderDashboardRecent();
@@ -1063,8 +1084,6 @@
 
         function renderChart() {
             const ctx = document.getElementById('cashflowChart').getContext('2d');
-            
-            // Generate last 6 months labels
             let labels = [];
             let incomeData = [];
             let expenseData = [];
@@ -1110,7 +1129,6 @@
             });
         }
 
-        // Run Init
         window.addEventListener('DOMContentLoaded', () => {
             initFirebase();
             updateSubCategories();

@@ -75,14 +75,11 @@
                     <h1 class="font-bold text-lg leading-tight">KeuanganKu <span class="text-[10px] bg-sky-900 px-1.5 py-0.5 rounded text-sky-200">Private</span></h1>
                     <div class="flex items-center gap-1.5 text-xs text-sky-200">
                         <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        <span id="syncStatusText">Menunggu Autentikasi...</span>
+                        <span id="syncStatusText">Menghubungkan...</span>
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="openConfigModal()" class="p-2 rounded-lg bg-white/10 hover:bg-white/25 text-white transition text-sm" title="Pengaturan Firebase">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
                 <button onclick="openAuthModal()" id="authBtn" class="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-900 font-semibold text-xs shadow hover:bg-amber-300 transition">
                     <i class="fa-solid fa-user-lock mr-1"></i> <span id="authBtnText">Login</span>
                 </button>
@@ -90,7 +87,7 @@
         </div>
     </header>
 
-    <!-- OVERLAY BLOKIR JIKA BELUM LOGIN -->
+    <!-- OVERLAY LOGIN / OTENTIKASI -->
     <div id="authOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl border border-slate-100">
             <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold shadow-inner">
@@ -98,7 +95,7 @@
             </div>
             <div class="space-y-1">
                 <h2 class="font-extrabold text-slate-900 text-lg">Aplikasi Keuangan Privat</h2>
-                <p class="text-xs text-slate-500">Data Anda dilindungi dan bersifat privat. Silakan masuk menggunakan akun terdaftar atau buat akun baru untuk mengakses pencatatan.</p>
+                <p class="text-xs text-slate-500">Silakan masuk menggunakan akun terdaftar atau buat akun baru untuk mengakses pencatatan keuangan Anda.</p>
             </div>
             <div class="space-y-2.5 pt-2 text-left">
                 <div>
@@ -113,11 +110,6 @@
                     <button onclick="handleCustomLogin()" class="flex-1 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow transition">Login</button>
                     <button onclick="handleCustomRegister()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">Daftar Akun</button>
                 </div>
-            </div>
-            <div class="border-t pt-3">
-                <button onclick="openConfigModal()" class="text-[11px] text-sky-600 font-semibold hover:underline">
-                    <i class="fa-solid fa-sliders mr-1"></i> Atur / Ubah Konfigurasi Firebase
-                </button>
             </div>
         </div>
     </div>
@@ -481,30 +473,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: PENGATURAN FIREBASE -->
-    <div id="modalConfig" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4">
-            <div class="flex items-center justify-between border-b pb-2">
-                <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-sliders text-sky-600 mr-1.5"></i> Konfigurasi Firebase</h3>
-                <button onclick="closeConfigModal()" class="text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <p class="text-xs text-slate-500">
-                Masukkan objek <code>firebaseConfig</code> dari Firebase Console Anda agar aplikasi tersinkronisasi secara privat.
-            </p>
-            <form onsubmit="handleSaveFirebaseConfig(event)" class="space-y-2.5 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-600 mb-1">JSON Config Firebase</label>
-                    <textarea id="cfgJson" rows="5" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..." \n}' class="w-full p-2.5 font-mono text-[11px] bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
-                </div>
-                <div class="flex gap-2 pt-1">
-                    <button type="button" onclick="resetFirebaseConfig()" class="py-2 px-3 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100">Hapus Config</button>
-                    <button type="submit" class="flex-1 py-2 bg-sky-600 text-white font-bold rounded-xl shadow">Simpan & Muat Ulang</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: AUTHENTICATION / MANAJEMEN AKUN -->
+    <!-- MODAL 3: AUTHENTICATION / MANAJEMEN AKUN -->
     <div id="modalAuth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4">
             <div class="flex items-center justify-between border-b pb-2">
@@ -529,6 +498,18 @@
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // ==========================================
+        // KONFIGURASI FIREBASE PERMANEN (HARDCODED)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsBtONqLQpa-HIK2Nz5oK_RnIqcscqbbA",
+            authDomain: "pwa-keuangan-multiusaha.firebaseapp.com",
+            projectId: "pwa-keuangan-multiusaha",
+            storageBucket: "pwa-keuangan-multiusaha.firebasestorage.app",
+            messagingSenderId: "450687901559",
+            appId: "1:450687901559:web:b78a0ac06f78fc09ebcb72"
+        };
+
         let db = null;
         let auth = null;
         let currentUser = null;
@@ -537,15 +518,6 @@
         let transactionsData = [];
         let roomsData = [];
         let chartInstance = null;
-
-        const defaultFirebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
-        };
 
         window.showToast = function(msg, type = 'success') {
             const toast = document.getElementById('toast');
@@ -591,20 +563,10 @@
             return parseInt(val.toString().replace(/[^0-9]/g, '')) || 0;
         }
 
-        // Initialize Firebase
+        // Initialize Firebase secara otomatis menggunakan objek konstan
         function initFirebase() {
-            let savedCfg = localStorage.getItem('pwa_firebase_config');
-            if (!savedCfg) {
-                document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-rose-500";
-                document.getElementById('syncStatusText').innerText = "Konfigurasi Firebase Belum Diatur";
-                openConfigModal();
-                return;
-            }
-
-            let cfg = JSON.parse(savedCfg);
-            
             try {
-                const app = initializeApp(cfg);
+                const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
@@ -631,6 +593,7 @@
             } catch (e) {
                 document.getElementById('syncStatusDot').className = "w-2 h-2 rounded-full bg-rose-500";
                 document.getElementById('syncStatusText').innerText = "Kesalahan Konfigurasi Firebase";
+                console.error(e);
             }
         }
 
@@ -653,13 +616,7 @@
             }, (error) => {});
         }
 
-        // Custom Login / Register handlers
         window.handleCustomLogin = function() {
-            if (!auth) {
-                showToast("Atur konfigurasi Firebase terlebih dahulu!", "error");
-                openConfigModal();
-                return;
-            }
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
             if(!email || !pass) {
@@ -672,11 +629,6 @@
         }
 
         window.handleCustomRegister = function() {
-            if (!auth) {
-                showToast("Atur konfigurasi Firebase terlebih dahulu!", "error");
-                openConfigModal();
-                return;
-            }
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
             if(!email || !pass) {
@@ -687,13 +639,6 @@
                 .then(() => showToast("Akun berhasil dibuat & masuk!"))
                 .catch(err => showToast("Gagal Daftar: " + err.message, "error"));
         }
-
-        window.openConfigModal = function() {
-            let saved = localStorage.getItem('pwa_firebase_config');
-            document.getElementById('cfgJson').value = saved ? saved : JSON.stringify(defaultFirebaseConfig, null, 2);
-            document.getElementById('modalConfig').classList.remove('hidden');
-        }
-        window.closeConfigModal = function() { document.getElementById('modalConfig').classList.add('hidden'); }
         
         window.openAuthModal = function() {
             const content = document.getElementById('authContent');
@@ -716,25 +661,6 @@
                 closeAuthModal();
                 location.reload();
             });
-        }
-
-        window.handleSaveFirebaseConfig = function(e) {
-            e.preventDefault();
-            const json = document.getElementById('cfgJson').value;
-            try {
-                JSON.parse(json);
-                localStorage.setItem('pwa_firebase_config', json);
-                showToast("Config disimpan. Memuat ulang...");
-                setTimeout(() => location.reload(), 1000);
-            } catch (err) {
-                showToast("Format JSON tidak valid!", "error");
-            }
-        }
-
-        window.resetFirebaseConfig = function() {
-            localStorage.removeItem('pwa_firebase_config');
-            showToast("Config dihapus. Memuat ulang...");
-            setTimeout(() => location.reload(), 1000);
         }
 
         // Navigation Switcher
